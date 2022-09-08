@@ -7,6 +7,9 @@ use txk::transaction::ClientID;
 use txk::transaction::Transaction;
 use txk::transaction_engine::TransactionEngine;
 
+// TODO: Move this to balance or serialisation
+const MAX_DEC_DIGITS: u32 = 4;
+
 #[derive(Serialize)]
 struct OutRecord {
     client: ClientID,
@@ -23,9 +26,9 @@ impl OutRecord {
         let total = available + held;
         Self {
             client: account.client_id(),
-            available: available.round_dp(4),
-            held: held.round_dp(4),
-            total: total.round_dp(4),
+            available: available.round_dp(MAX_DEC_DIGITS),
+            held: held.round_dp(MAX_DEC_DIGITS),
+            total: total.round_dp(MAX_DEC_DIGITS),
             locked: account.is_frozen(),
         }
     }
