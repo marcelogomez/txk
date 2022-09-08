@@ -29,11 +29,11 @@ pub enum TransactionType {
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 pub struct Transaction {
     #[serde(rename = "type")]
-    tx_type: TransactionType,
-    client: ClientID,
+    pub tx_type: TransactionType,
+    pub client: ClientID,
     #[serde(rename = "tx")]
-    transaction: TransactionID,
-    amount: Option<Funds>,
+    pub transaction: TransactionID,
+    pub amount: Option<Funds>,
 }
 
 #[cfg(test)]

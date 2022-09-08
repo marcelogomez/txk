@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use thiserror::Error;
 
 /// Represents the state of a deposit for traking disputes
-/// 
+///
 /// When a new deposit is made it starts in the `Undisputed` state.
 /// After a dispute transaction is processed, it moves to the `InDispute` state.
 /// Then it can move to either the `Resolve` or `Chargedback` state. These two states
@@ -37,7 +37,7 @@ pub enum AccountUpdateError {
 }
 
 /// Represents a client's account and processes transactions
-/// 
+///
 /// Keeps track of the balance and disputes for an account.
 /// Note that we only allow for disputing deposits since disputing withdrawals
 /// could lead to double spend by increasing an account's available funds after
