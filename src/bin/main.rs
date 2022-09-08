@@ -1,5 +1,4 @@
 use clap::Parser;
-use csv::Reader;
 use csv::ReaderBuilder;
 use csv::Trim;
 use csv::Writer;
