@@ -6,6 +6,9 @@ use csv::Reader;
 use csv::Writer;
 use rust_decimal::Decimal;
 use serde::Serialize;
+use std::sync::mpsc::channel;
+use std::sync::mpsc::Receiver;
+use std::sync::mpsc::Sender;
 use txk::account::Account;
 use txk::transaction::ClientID;
 use txk::transaction::Transaction;
@@ -13,6 +16,8 @@ use txk::transaction_engine::TransactionEngine;
 
 // TODO: Move this to balance or serialisation
 const MAX_DEC_DIGITS: u32 = 4;
+
+const NUM_THREADS: usize = 8;
 
 #[derive(Serialize)]
 struct OutRecord {
@@ -43,32 +48,61 @@ struct Args {
     input_file: String,
 }
 
+fn receiver_thread(out: Sender<anyhow::Result<OutRecord>>, input: Receiver<Transaction>) {
+    let mut engine = TransactionEngine::new();
+
+    for transaction in input {
+        // Forward errors to be logged
+        if let Err(e) = engine.process(transaction) {
+            let _ = out.send(Err(anyhow::anyhow!(e)));
+        }
+    }
+
+    for account in engine.accounts().values() {
+        let _ = out.send(Ok(OutRecord::new(account)));
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    let mut engine = TransactionEngine::new();
+    let (out_sender, out_receiver) = channel::<anyhow::Result<OutRecord>>();
+
+    // Set up processing threads
+    let num_threads = NUM_THREADS;
+    let mut input_senders = vec![];
+    let mut receiver_threads = vec![];
+    for (sender, receiver) in std::iter::repeat_with(|| channel::<Transaction>()).take(num_threads)
+    {
+        input_senders.push(sender);
+        let out = out_sender.clone();
+        receiver_threads.push(std::thread::spawn(move || {
+            receiver_thread(out, receiver);
+        }));
+    }
+
     for transaction in Reader::from_path(Path::new(&args.input_file))?.deserialize::<Transaction>()
     {
         match transaction {
             Ok(t) => {
-                if let Err(e) = engine.process(t) {
-                    eprintln!("Failed to process transaction: {}", e);
-                }
+                let thread_num = (t.client as usize) % num_threads;
+                let _ = input_senders[thread_num].send(t);
             }
+            // Forward error to be logged
             Err(e) => {
-                eprintln!("Failed to parse transaction: {}", e);
+                let _ = out_sender.send(Err(anyhow::anyhow!(e)));
             }
         }
     }
 
+    // Need to drop senders for receiver threads to finish
+    drop(input_senders);
+    drop(out_sender);
+
     let mut out = Writer::from_writer(std::io::stdout());
-    for account in engine.accounts().values() {
-        if let Err(e) = out.serialize(OutRecord::new(account)) {
-            eprintln!(
-                "Failed to serialize record for account {}: {}",
-                account.client_id(),
-                e
-            );
+    for record in out_receiver {
+        if let Err(e) = record.and_then(|r| Ok(out.serialize(r)?)) {
+            eprintln!("Failed to serialize record for account: {}", e);
         }
     }
 
