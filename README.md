@@ -24,6 +24,8 @@ Implements a toy enginefor processing transactions on a single asset account. De
 
 I managed to implement a rudimentary multithreading mechanism where we use a fixed number of `mpsc::channel`s (defaults to 8 but configurable via a CLI arg) to distribute the computaional load. We only require that transactions for the same client go to the thread so we use the modulo operator (`transaction.client % num_threads`) to ensure this.
 
+In the current implementation there's a single "input" channel that's fed data from the input file. However, this abstraction would serve to sequence input from multiple sources (e.g. concurrent TCP streams).
+
 I tested out this works by generating random inputs, but of course this has the fallback of not taking into account hot keys. That would require some smart way of detecing them and moving accounts across threads, smarter scheduling, which felt way beyond the scope of this.
 
 # Using Decimal to represent amounts
