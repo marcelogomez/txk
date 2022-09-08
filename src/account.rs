@@ -64,6 +64,18 @@ impl Account {
         }
     }
 
+    pub fn client_id(&self) -> ClientID {
+        self.client
+    }
+
+    pub fn is_frozen(&self) -> bool {
+        self.frozen
+    }
+
+    pub fn balance(&self) -> Balance {
+        self.balance
+    }
+
     pub fn deposit(
         &mut self,
         transaction_id: TransactionID,
