@@ -44,6 +44,7 @@ pub enum AccountUpdateError {
 /// they might have already been withdrawn.
 /// Also note that despoits in terminal states (`Resolved` or `Chargedback`) cannot
 /// be disputed again.
+#[derive(Debug)]
 pub struct Account {
     client: ClientID,
     balance: Balance,

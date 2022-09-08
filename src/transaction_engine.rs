@@ -14,6 +14,7 @@ pub enum TransactionEngineError {
     MissingAmount,
 }
 
+#[derive(Debug)]
 pub struct TransactionEngine {
     accounts: HashMap<ClientID, Account>,
 }
