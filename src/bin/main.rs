@@ -1,5 +1,7 @@
 use clap::Parser;
 use csv::Reader;
+use csv::ReaderBuilder;
+use csv::Trim;
 use csv::Writer;
 use rust_decimal::Decimal;
 use serde::Serialize;
@@ -82,8 +84,12 @@ fn main() -> anyhow::Result<()> {
         }));
     }
 
+    let mut reader = ReaderBuilder::new()
+        .trim(Trim::All)
+        .from_path(Path::new(&args.input_file))?;
+
     // Route input from file into the right thread based on the client id
-    for transaction in Reader::from_path(Path::new(&args.input_file))?.deserialize::<Transaction>()
+    for transaction in reader.deserialize::<Transaction>()
     {
         match transaction {
             Ok(t) => {
