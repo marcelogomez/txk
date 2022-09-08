@@ -1,11 +1,9 @@
-use std::convert::TryFrom;
-use std::path::Path;
-
 use clap::Parser;
 use csv::Reader;
 use csv::Writer;
 use rust_decimal::Decimal;
 use serde::Serialize;
+use std::path::Path;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -101,8 +99,15 @@ fn main() -> anyhow::Result<()> {
 
     let mut out = Writer::from_writer(std::io::stdout());
     for record in out_receiver {
-        if let Err(e) = record.and_then(|r| Ok(out.serialize(r)?)) {
-            eprintln!("Failed to serialize record for account: {}", e);
+        match record {
+            Ok(r) => {
+                if let Err(e) = out.serialize(&r) {
+                    eprintln!("Failed to seralize record for account {}: {}", r.client, e);
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to process transaction: {}", e);
+            }
         }
     }
 
