@@ -1,3 +1,7 @@
+use std::convert::TryFrom;
+use std::path::Path;
+
+use clap::Parser;
 use csv::Reader;
 use csv::Writer;
 use rust_decimal::Decimal;
@@ -34,9 +38,17 @@ impl OutRecord {
     }
 }
 
+#[derive(Parser, Debug)]
+struct Args {
+    input_file: String,
+}
+
 fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+
     let mut engine = TransactionEngine::new();
-    for transaction in Reader::from_reader(std::io::stdin()).deserialize::<Transaction>() {
+    for transaction in Reader::from_path(Path::new(&args.input_file))?.deserialize::<Transaction>()
+    {
         match transaction {
             Ok(t) => {
                 if let Err(e) = engine.process(t) {
