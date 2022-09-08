@@ -7,6 +7,13 @@ use crate::transaction::TransactionID;
 use std::collections::HashMap;
 use thiserror::Error;
 
+/// Represents the state of a deposit for traking disputes
+/// 
+/// When a new deposit is made it starts in the `Undisputed` state.
+/// After a dispute transaction is processed, it moves to the `InDispute` state.
+/// Then it can move to either the `Resolve` or `Chargedback` state. These two states
+/// are considered terminal to avoid double spend. Disputes for transactions in these
+/// states will fail and be a no-op
 #[derive(Debug, PartialEq)]
 enum DepositState {
     Undisputed(Funds),
@@ -29,6 +36,14 @@ pub enum AccountUpdateError {
     BalanceError(#[from] FundsOpError),
 }
 
+/// Represents a client's account and processes transactions
+/// 
+/// Keeps track of the balance and disputes for an account.
+/// Note that we only allow for disputing deposits since disputing withdrawals
+/// could lead to double spend by increasing an account's available funds after
+/// they might have already been withdrawn.
+/// Also note that despoits in terminal states (`Resolved` or `Chargedback`) cannot
+/// be disputed again.
 pub struct Account {
     client: ClientID,
     balance: Balance,
