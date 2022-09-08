@@ -36,6 +36,10 @@ pub enum AccountUpdateError {
     BalanceError(#[from] FundsOpError),
     #[error("Account is frozen")]
     AccountIsFrozen,
+    #[error("Negative deposits not allowed, use withdrawal instead")]
+    NegativeDeposit,
+    #[error("Negative withdrawals not allowed, use deposit instead")]
+    NegativeWithdrawal,
 }
 
 /// Represents a client's account and processes transactions
@@ -85,6 +89,10 @@ impl Account {
             return Err(AccountUpdateError::DepositAlreadyProcessed(transaction_id));
         }
 
+        if amount.is_negative() {
+            return Err(AccountUpdateError::NegativeDeposit);
+        }
+
         self.balance = self
             .balance
             .apply(BalanceDiff::new().with_available(amount))?;
@@ -97,6 +105,10 @@ impl Account {
     pub fn withdraw(&mut self, amount: Funds) -> Result<(), AccountUpdateError> {
         if self.frozen {
             return Err(AccountUpdateError::AccountIsFrozen);
+        }
+
+        if amount.is_negative() {
+            return Err(AccountUpdateError::NegativeWithdrawal);
         }
 
         if self.balance.available() < amount {
@@ -167,6 +179,16 @@ mod test {
     }
 
     #[test]
+    fn test_negative_deposit() {
+        let mut account = Account::new(42);
+        assert_eq!(
+            account.deposit(1, Funds::new(dec!(-1.5))),
+            Err(AccountUpdateError::NegativeDeposit),
+        );
+        assert_eq!(account.balance.available(), Funds::new(0));
+    }
+
+    #[test]
     fn test_withdrawal() {
         let mut account = Account::new(42);
         account
@@ -177,6 +199,20 @@ mod test {
             .expect("Withrawal to succeed");
         assert_eq!(account.balance.available(), Funds::new(dec!(0.5)));
     }
+
+    #[test]
+    fn negative_withdrawal() {
+        let mut account = Account::new(42);
+        account
+            .deposit(1, Funds::new(dec!(1.5)))
+            .expect("Deposit to succeed");
+        assert_eq!(
+            account.withdraw(Funds::new(dec!(-1.0))),
+            Err(AccountUpdateError::NegativeWithdrawal),
+        );
+        assert_eq!(account.balance.available(), Funds::new(dec!(1.5)));
+    }
+
 
     #[test]
     fn test_withdrawal_insufficient_funds() {

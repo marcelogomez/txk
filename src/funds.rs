@@ -54,6 +54,10 @@ impl Funds {
             self.0.checked_sub(n.into()).ok_or(FundsOpError::Overflow)?,
         ))
     }
+
+    pub fn is_negative(&self) -> bool {
+        self.0.is_sign_negative()
+    }
 }
 
 #[cfg(test)]
