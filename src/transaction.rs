@@ -14,13 +14,18 @@ pub enum TransactionType {
     Chargeback,
 }
 
-// Ideally this would be an enum to account for the fact that
-// amount is only presennt for deposits and withdrawals.
-// However, the csv crate does not deal very well with tagged enum
-// deserialization (see https://github.com/BurntSushi/rust-csv/issues/278).
-// Instead we opt to make amount an Option. This has some implications for serialisation:
-// because all records need to have the same amount of columns we need a trailing comma for
-// records that do not have an amount
+/// Type for representing transactions from the csv input files
+/// 
+/// Ideally this would be an enum to account for the fact that
+/// amount is only presennt for deposits and withdrawals.
+/// However, the csv crate does not deal very well with tagged enum
+/// deserialization (see https://github.com/BurntSushi/rust-csv/issues/278).
+/// 
+/// Instead we opt to make amount an `Option`
+/// 
+/// This has some implications for serialisation:
+/// because all records need to have the same amount of columns we need a trailing comma for
+/// records that do not have an amount
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct Transaction {
     #[serde(rename = "type")]
