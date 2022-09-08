@@ -17,6 +17,9 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    println!("{:?}", engine);
+    for account in engine.accounts().values() {
+        println!("{:?}", account);
+    }
+
     Ok(())
 }
