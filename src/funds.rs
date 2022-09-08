@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use serde::Deserialize;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum FundsOpError {
     Overflow,
 }
@@ -18,12 +18,12 @@ pub enum FundsOpError {
 /// Arguably overflows are rare enough that this it not worth it,
 /// but this at least serves as an illustration of how to use the type system
 /// to implement these tradeoffs.
-#[derive(Debug, PartialEq, Clone, Copy, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize)]
 pub struct Funds(Decimal);
 
-impl Into<Decimal> for Funds {
-    fn into(self) -> Decimal {
-        self.0
+impl From<Funds> for Decimal {
+    fn from(funds: Funds) -> Self {
+        funds.0
     }
 }
 

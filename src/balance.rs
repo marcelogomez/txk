@@ -10,7 +10,7 @@ use rust_decimal::Decimal;
 /// Note that although the only possible failure in the current implementation is either balance overflowing
 /// the same API can be extended to guard against errors such as maintaining a minimum balance or held funds
 /// not being negative
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Balance {
     available: Funds,
     held: Funds,
@@ -38,8 +38,14 @@ impl Balance {
     }
 }
 
+impl Default for Balance {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Represents a change to an account's `Balance`
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct BalanceDiff {
     available: Option<Funds>,
     held: Option<Funds>,
@@ -65,6 +71,12 @@ impl BalanceDiff {
             available: self.available,
             held: Some(Funds::new(dh)),
         }
+    }
+}
+
+impl Default for BalanceDiff {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

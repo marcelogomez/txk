@@ -26,7 +26,7 @@ pub enum TransactionType {
 /// This has some implications for serialisation:
 /// because all records need to have the same amount of columns we need a trailing comma for
 /// records that do not have an amount
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize)]
 pub struct Transaction {
     #[serde(rename = "type")]
     tx_type: TransactionType,
