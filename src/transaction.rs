@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 use serde::Deserialize;
 
 pub type ClientID = u16;
@@ -18,8 +19,8 @@ pub enum TransactionType {
 // However, the csv crate does not deal very well with tagged enum
 // deserialization (see https://github.com/BurntSushi/rust-csv/issues/278).
 // Instead we opt to make amount an Option. This has some implications for serialisation:
-// because all records need to have the same amount of columns we need a trailing comma for 
-// records that do not have an amount 
+// because all records need to have the same amount of columns we need a trailing comma for
+// records that do not have an amount
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct Transaction {
     #[serde(rename = "type")]
@@ -27,13 +28,14 @@ pub struct Transaction {
     client: ClientID,
     #[serde(rename = "tx")]
     transaction: TransactionID,
-    amount: Option<f32>,
+    amount: Option<Decimal>,
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
     use csv::Reader;
+    use rust_decimal_macros::dec;
 
     fn deserialize_transaction_from_str(t: &str) -> Transaction {
         Reader::from_reader(format!("type,client,tx,amount\n{}", t).as_bytes())
@@ -51,7 +53,7 @@ mod test {
                 tx_type: TransactionType::Deposit,
                 client: 1,
                 transaction: 1,
-                amount: Some(1.0),
+                amount: Some(dec!(1.0)),
             },
         );
     }
