@@ -52,3 +52,9 @@ impl TransactionEngine {
         Ok(())
     }
 }
+
+impl Default for TransactionEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}

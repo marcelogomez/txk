@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
     let num_threads = args.num_threads;
     let mut input_senders = vec![];
     let mut receiver_threads = vec![];
-    for (sender, receiver) in std::iter::repeat_with(|| channel::<Transaction>()).take(num_threads)
+    for (sender, receiver) in std::iter::repeat_with(channel::<Transaction>).take(num_threads)
     {
         input_senders.push(sender);
         let out = out_sender.clone();

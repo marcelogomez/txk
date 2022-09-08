@@ -22,7 +22,7 @@ enum DepositState {
     Chargedback,
 }
 
-#[derive(Debug, PartialEq, Error)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum AccountUpdateError {
     #[error("Transaction {0} is not disputable (has already been settled or not a deposit)")]
     TransactionNotDisputable(TransactionID),
