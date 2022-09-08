@@ -43,6 +43,8 @@ impl OutRecord {
 
 #[derive(Parser, Debug)]
 struct Args {
+    #[clap(short, long, default_value_t = NUM_THREADS)]
+    num_threads: usize,
     input_file: String,
 }
 
@@ -64,10 +66,11 @@ fn receiver_thread(out: Sender<anyhow::Result<OutRecord>>, input: Receiver<Trans
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
+    // Set up output channel
     let (out_sender, out_receiver) = channel::<anyhow::Result<OutRecord>>();
 
     // Set up processing threads
-    let num_threads = NUM_THREADS;
+    let num_threads = args.num_threads;
     let mut input_senders = vec![];
     let mut receiver_threads = vec![];
     for (sender, receiver) in std::iter::repeat_with(|| channel::<Transaction>()).take(num_threads)
@@ -79,6 +82,7 @@ fn main() -> anyhow::Result<()> {
         }));
     }
 
+    // Route input from file into the right thread based on the client id
     for transaction in Reader::from_path(Path::new(&args.input_file))?.deserialize::<Transaction>()
     {
         match transaction {
