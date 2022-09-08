@@ -33,6 +33,10 @@ impl Account {
     }
 
     pub fn withdraw(&mut self, amount: Funds) -> Result<(), AccountUpdateError> {
+        if self.balance.available() < amount {
+            return Err(AccountUpdateError::InsufficientFunds);
+        }
+
         self.balance
             .apply(BalanceDiff::new().with_available(-amount))?;
         Ok(())
