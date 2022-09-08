@@ -1,6 +1,11 @@
 use rust_decimal::Decimal;
 use serde::Deserialize;
 
+#[derive(Debug, PartialEq)]
+pub enum FundsOpError {
+    Overflow,
+}
+
 /// Wrapper type for overflow safe operations to represent funds
 /// 
 /// This type represents a trade-off between API ergonomics and safety.
@@ -16,9 +21,10 @@ use serde::Deserialize;
 #[derive(Debug, PartialEq, Clone, Copy, Deserialize)]
 pub struct Funds(Decimal);
 
-#[derive(Debug, PartialEq)]
-pub enum FundsOpError {
-    Overflow,
+impl Into<Decimal> for Funds {
+    fn into(self) -> Decimal {
+        self.0
+    }
 }
 
 impl Funds {

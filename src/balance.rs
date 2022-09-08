@@ -94,6 +94,7 @@ mod test {
                         .with_available(Decimal::MAX)
                         .with_held(Decimal::MAX)
                 )
+                .expect("To succeed")
                 .apply(BalanceDiff::new().with_available(1)),
             Err(FundsOpError::Overflow),
         );
