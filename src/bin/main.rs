@@ -48,7 +48,13 @@ fn main() -> anyhow::Result<()> {
 
     let mut out = Writer::from_writer(std::io::stdout());
     for account in engine.accounts().values() {
-        out.serialize(OutRecord::new(account))?;
+        if let Err(e) = out.serialize(OutRecord::new(account)) {
+            eprintln!(
+                "Failed to serialize record for account {}: {}",
+                account.client_id(),
+                e
+            );
+        }
     }
 
     Ok(())
