@@ -71,7 +71,7 @@ fn main() -> anyhow::Result<()> {
     let (out_sender, out_receiver) = channel::<anyhow::Result<OutRecord>>();
 
     // Set up processing threads
-    let num_threads = args.num_threads;
+    let num_threads = std::cmp::max(args.num_threads, 1);
     let mut input_senders = vec![];
     let mut receiver_threads = vec![];
     for (sender, receiver) in std::iter::repeat_with(channel::<Transaction>).take(num_threads)
