@@ -28,6 +28,10 @@ impl Balance {
         self.available
     }
 
+    pub fn held(&self) -> Funds {
+        self.held
+    }
+
     pub fn apply(self, diff: BalanceDiff) -> Result<Self, FundsOpError> {
         Ok(Self {
             available: match diff.available {
