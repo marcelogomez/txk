@@ -1,4 +1,4 @@
-use rust_decimal::Decimal;
+use crate::funds::Funds;
 use serde::Deserialize;
 
 pub type ClientID = u16;
@@ -28,14 +28,14 @@ pub struct Transaction {
     client: ClientID,
     #[serde(rename = "tx")]
     transaction: TransactionID,
-    amount: Option<Decimal>,
+    amount: Option<Funds>,
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::funds::Funds;
     use csv::Reader;
-    use rust_decimal_macros::dec;
 
     fn deserialize_transaction_from_str(t: &str) -> Transaction {
         Reader::from_reader(format!("type,client,tx,amount\n{}", t).as_bytes())
@@ -53,7 +53,7 @@ mod test {
                 tx_type: TransactionType::Deposit,
                 client: 1,
                 transaction: 1,
-                amount: Some(dec!(1.0)),
+                amount: Some(Funds::new(1)),
             },
         );
     }
